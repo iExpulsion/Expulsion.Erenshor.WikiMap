@@ -23,23 +23,26 @@ namespace Expulsion.Erenshor.WikiMap
             _harmonyInstance = new Harmony(PluginGuid);
             _harmonyInstance.PatchAll();
 
-            StartCoroutine(WaitForMapObject());
-
             Logger.LogInfo($"Plugin {PluginName} is loaded!");
+        }
+
+        private void Start()
+        {
+            StartCoroutine(WaitForMapObject());
         }
 
         private IEnumerator WaitForMapObject()
         {
             while (!_mapObject)
             {
-                _mapObject = GameObject.Find("Map");
+                _mapObject = GameObject.Find("UI/UIElements/Map");
                 yield return null;
             }
 
             var mapImage = _mapObject?.GetComponent<Image>();
 
             var texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-            texture.LoadImage(File.ReadAllBytes($"{Paths.PluginPath}/{PluginGuid}/Assets/ErenshorMapRoutes.png"));
+            texture.LoadImage(File.ReadAllBytes(Path.Combine(Paths.PluginPath, PluginGuid, "Assets", "ErenshorMapRoutes.png")));
 
             if (mapImage)
                 mapImage.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
