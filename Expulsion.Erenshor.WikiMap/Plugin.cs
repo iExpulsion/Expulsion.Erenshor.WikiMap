@@ -12,11 +12,12 @@ namespace Expulsion.Erenshor.WikiMap
     {
         private const string PluginGuid = "Expulsion.Erenshor.WikiMap";
         private const string PluginName = "WikiMap";
-        private const string PluginVersion = "1.0.0";
+        private const string PluginVersion = "1.0.2";
 
         private Harmony? _harmonyInstance;
 
         private GameObject? _mapObject;
+        private GameObject? _mapBorderObject;
 
         private void Awake()
         {
@@ -33,19 +34,32 @@ namespace Expulsion.Erenshor.WikiMap
 
         private IEnumerator WaitForMapObject()
         {
-            while (!_mapObject)
+            while (_mapObject == null)
             {
                 _mapObject = GameObject.Find("UI/UIElements/Map");
+                _mapBorderObject = GameObject.Find("UI/UIElements/Map/Map (1)");
                 yield return null;
             }
+
+            var mapRect = _mapObject?.GetComponent<RectTransform>();
+            var mapBorderRect = _mapBorderObject?.GetComponent<RectTransform>();
 
             var mapImage = _mapObject?.GetComponent<Image>();
 
             var texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
             texture.LoadImage(File.ReadAllBytes(Path.Combine(Paths.PluginPath, PluginGuid, "Assets", "ErenshorMapRoutes.png")));
 
-            if (mapImage)
+            if (mapImage != null && mapRect != null && mapBorderRect != null)
+            {
+                mapRect.sizeDelta = new Vector2(texture.width, texture.height) * 0.55f;
+                mapRect.anchoredPosition = new Vector2(0, 0);
+                mapRect.anchoredPosition3D = new Vector3(0, 0, 0);
+                mapBorderRect.anchorMin = new Vector2(0, 0);
+                mapBorderRect.anchorMax = new Vector2(1, 1);
+                mapBorderRect.offsetMin = new Vector2(-24, -24);
+                mapBorderRect.offsetMax = new Vector2(24, 24);
                 mapImage.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            }
         }
 
         private void OnDestroy()
