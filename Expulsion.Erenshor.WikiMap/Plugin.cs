@@ -3,6 +3,7 @@ using System.IO;
 using BepInEx;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace Expulsion.Erenshor.WikiMap
@@ -12,7 +13,7 @@ namespace Expulsion.Erenshor.WikiMap
     {
         private const string PluginGuid = "Expulsion.Erenshor.WikiMap";
         private const string PluginName = "WikiMap";
-        private const string PluginVersion = "1.0.2";
+        private const string PluginVersion = "1.0.3";
 
         private Harmony? _harmonyInstance;
 
@@ -29,16 +30,24 @@ namespace Expulsion.Erenshor.WikiMap
 
         private void Start()
         {
-            StartCoroutine(WaitForMapObject());
+            StopAllCoroutines();
+
+            SceneManager.sceneLoaded += (scene, mode) => { StartCoroutine(WaitForMapObject()); };
         }
 
         private IEnumerator WaitForMapObject()
         {
-            while (_mapObject == null)
+            float startTime = Time.time;
+            while (_mapObject == null && Time.time - startTime < 5f)
             {
                 _mapObject = GameObject.Find("UI/UIElements/Map");
                 _mapBorderObject = GameObject.Find("UI/UIElements/Map/Map (1)");
                 yield return null;
+            }
+
+            if (_mapObject == null)
+            {
+                yield break;
             }
 
             var mapRect = _mapObject?.GetComponent<RectTransform>();
